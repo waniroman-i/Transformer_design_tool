@@ -10,10 +10,23 @@
     --bg:#0a0e14; --panel:#111720; --border:#1e2d3d;
     --accent:#00d4ff; --accent2:#ff6b35; --pass:#00e676; --fail:#ff3d57;
     --text:#cdd9e5; --muted:#4a6070; --heading:#e8f4f8; --warn:#ffd166;
+    --eq-bg:#0d1520; --grid-color:rgba(0,212,255,0.03); --input-bg:#0d1520;
+  }
+  body.light {
+    --bg:#f0f4f8; --panel:#ffffff; --border:#c8d8e8;
+    --accent:#0077aa; --accent2:#c94d10; --pass:#0a8a4a; --fail:#cc2233;
+    --text:#2d3e50; --muted:#7a92a8; --heading:#0d1e2e; --warn:#a06800;
+    --eq-bg:#e6f0f8; --grid-color:rgba(0,100,160,0.05); --input-bg:#f5f9ff;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
-  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;transition:background .3s,color .3s;}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--grid-color) 1px,transparent 1px),linear-gradient(90deg,var(--grid-color) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+
+  /* ── theme toggle ── */
+  .theme-toggle{position:fixed;top:18px;right:24px;z-index:100;background:var(--panel);border:1px solid var(--border);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:12px;padding:8px 16px;cursor:pointer;letter-spacing:.08em;transition:all .25s;display:flex;align-items:center;gap:8px;box-shadow:0 2px 12px rgba(0,0,0,0.2);}
+  .theme-toggle:hover{border-color:var(--accent);}
+  .theme-toggle .tog-icon{font-size:16px;transition:transform .4s;}
+  body.light .theme-toggle .tog-icon{transform:rotate(20deg);}
   .shell{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:40px 24px 80px;}
 
   header{display:flex;align-items:flex-end;gap:18px;margin-bottom:48px;border-bottom:1px solid var(--border);padding-bottom:24px;}
@@ -40,7 +53,7 @@
   /* equation panel */
   .eq-toggle{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent);cursor:pointer;letter-spacing:.08em;border:1px solid var(--border);padding:6px 14px;display:inline-block;margin-bottom:16px;transition:all .2s;}
   .eq-toggle:hover{background:rgba(0,212,255,0.06);}
-  .eq-box{background:#0d1520;border:1px solid var(--border);padding:20px 24px;margin-bottom:20px;display:none;}
+  .eq-box{background:var(--eq-bg);border:1px solid var(--border);padding:20px 24px;margin-bottom:20px;display:none;}
   .eq-box.open{display:block;}
   .eq-box h4{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:.1em;margin-bottom:12px;}
   .eq-list{list-style:none;}
@@ -53,7 +66,7 @@
   .field-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;}
   .field{display:flex;flex-direction:column;gap:6px;}
   label{font-size:12px;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:.05em;}
-  input[type="number"]{background:#0d1520;border:1px solid var(--border);color:var(--heading);font-family:'Share Tech Mono',monospace;font-size:15px;padding:10px 14px;outline:none;transition:border-color .2s;width:100%;}
+  input[type="number"]{background:var(--input-bg);border:1px solid var(--border);color:var(--heading);font-family:'Share Tech Mono',monospace;font-size:15px;padding:10px 14px;outline:none;transition:border-color .2s,background .3s;width:100%;}
   input[type="number"]:focus{border-color:var(--accent);}
   input[type="number"]::placeholder{color:var(--muted);}
 
@@ -83,7 +96,7 @@
   .swg-tab.active{background:rgba(0,212,255,0.1);color:var(--accent);border-color:var(--accent);}
   .table-wrap{overflow-x:auto;margin-bottom:16px;border:1px solid var(--border);max-height:320px;overflow-y:auto;}
   table{width:100%;border-collapse:collapse;font-family:'Share Tech Mono',monospace;font-size:12px;}
-  thead th{background:#0d1520;color:var(--accent);padding:10px 14px;text-align:left;letter-spacing:.08em;font-size:11px;position:sticky;top:0;z-index:2;}
+  thead th{background:var(--eq-bg);color:var(--accent);padding:10px 14px;text-align:left;letter-spacing:.08em;font-size:11px;position:sticky;top:0;z-index:2;}
   tbody tr{cursor:pointer;transition:background .15s;}
   tbody tr:hover{background:rgba(0,212,255,0.06);}
   tbody tr.ok-row{border-left:2px solid var(--pass);}
@@ -118,6 +131,9 @@
 </style>
 </head>
 <body>
+<button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">
+  <span class="tog-icon">🌙</span><span id="theme-label">LIGHT MODE</span>
+</button>
 <div class="shell">
 
 <header>
@@ -551,6 +567,25 @@ function step5Next(){
   document.getElementById('kw-status').style.color=passed?'var(--pass)':'var(--fail)';
   show('summary-box');
 }
+
+// ── theme toggle ───────────────────────────────────────────────────────────
+function toggleTheme(){
+  const isLight = document.body.classList.toggle('light');
+  document.getElementById('theme-label').textContent = isLight ? 'DARK MODE' : 'LIGHT MODE';
+  document.querySelector('.tog-icon').textContent = isLight ? '☀️' : '🌙';
+  localStorage.setItem('tx-theme', isLight ? 'light' : 'dark');
+}
+// restore saved preference
+(function(){
+  const saved = localStorage.getItem('tx-theme');
+  if(saved === 'light'){
+    document.body.classList.add('light');
+    document.addEventListener('DOMContentLoaded', ()=>{
+      document.getElementById('theme-label').textContent='DARK MODE';
+      document.querySelector('.tog-icon').textContent='☀️';
+    });
+  }
+})();
 
 // ── accept / restart ───────────────────────────────────────────────────────
 function acceptDesign(){
