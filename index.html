@@ -176,11 +176,11 @@
       <li><span class="eq-name">N1</span><span class="eq-formula">= V1 / (k_f · f · Bm · Ac)  → ceil</span><span class="eq-note">Primary turns from Faraday's law</span></li>
       <li><span class="eq-name">N2</span><span class="eq-formula">= V2 / (k_f · f · Bm · Ac)  → ceil</span><span class="eq-note">Secondary turns</span></li>
       <li><span class="eq-name">A_wire</span><span class="eq-formula">= I / J  [mm²]</span><span class="eq-note">Minimum conductor cross-section; J = 3.5 A/mm² (copper)</span></li>
-      <li><span class="eq-name">Kw′</span><span class="eq-formula">= (N1·A1 + N2·A2) / Aw</span><span class="eq-note">Actual window utilisation — must be ≤ 0.29</span></li>
+      <li><span class="eq-name">Kw′</span><span class="eq-formula">= (N1·A1 + N2·A2) / Aw</span><span class="eq-note">Actual window utilisation — must be ≤ 0.25</span></li>
       <li><span class="eq-name">Parallel</span><span class="eq-formula">n = ceil(A_required / A_single_wire)</span><span class="eq-note">Number of wires in parallel when no single SWG is large enough</span></li>
     </ul>
     <div style="margin-top:14px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);">
-      Constants: Bm = 0.25 T (ferrite) · J = 3.5×10⁶ A/m² · Kw_target = 0.29<br>
+      Constants: Bm = 0.15 T (ferrite) · J = 3.5×10⁶ A/m² · Kw_target = 0.25<br>
       Sine: k_f = 4.44 &nbsp;|&nbsp; Square: k_f = 4.0
     </div>
   </div>
@@ -196,7 +196,7 @@
   <div class="eq-box" id="eq1">
     <h4>// AREA PRODUCT</h4>
     <ul class="eq-list">
-      <li><span class="eq-name">Ap</span><span class="eq-formula">= (V1 · I1) / (k_f · f · Bm · J · Kw) × 10¹²</span><span class="eq-note">k_f=<span id="kf-label1"></span> · Bm=0.25T · J=3.5×10⁶A/m² · Kw=0.29</span></li>
+      <li><span class="eq-name">Ap</span><span class="eq-formula">= (V1 · I1) / (k_f · f · Bm · J · Kw) × 10¹²</span><span class="eq-note">k_f=<span id="kf-label1"></span> · Bm=0.15T · J=3.5×10⁶A/m² · Kw=0.25</span></li>
       <li><span class="eq-name">A1_min</span><span class="eq-formula">= I1 / J  [mm²]</span></li>
       <li><span class="eq-name">A2_min</span><span class="eq-formula">= I2 / J  [mm²]</span></li>
     </ul>
@@ -306,7 +306,7 @@
   <div class="eq-box" id="eq6">
     <ul class="eq-list">
       <li><span class="eq-name">Kw′</span><span class="eq-formula">= (N1 × A1_total + N2 × A2_total) / Aw</span><span class="eq-note">A_total = n_parallel × area_per_wire</span></li>
-      <li><span class="eq-name">Target</span><span class="eq-formula">Kw′ ≤ 0.29</span><span class="eq-note">Window space factor for wound transformers</span></li>
+      <li><span class="eq-name">Target</span><span class="eq-formula">Kw′ ≤ 0.25</span><span class="eq-note">Window space factor for wound transformers</span></li>
     </ul>
   </div>
   <div id="summary-rows"></div>
@@ -350,7 +350,7 @@ const SWG = [
   [8,4.064,4.219,1.329,12.970000],
 ];
 
-const Bm=0.25, J=3.5e6, Kw=0.29;
+const Bm=0.15, J=3.5e6, Kw=0.25;
 let state={};
 // winding modes: 'single' or 'parallel'
 let mode1='single', mode2='single';
@@ -554,7 +554,7 @@ function step5Next(){
     resultRow('Secondary wire', n2>1 ? `${n2}× SWG ${state.swg2}  |  ${state.A2_sel.toFixed(6)} mm² total` : `SWG ${state.swg2}  |  ${state.A2_sel.toFixed(6)} mm²`)+
     resultRow('N1 turns', state.N1)+
     resultRow('N2 turns', state.N2)+
-    resultRow('Kw  (target ≤ 0.29)', Kw.toFixed(4))+
+    resultRow('Kw  (target ≤ 0.25)', Kw.toFixed(4))+
     resultRow('Kw′ (calculated)', Kw_calc.toFixed(4), passed?'pass':'fail')+
     resultRow('Window Space Factor', passed?'PASSED ✓':'FAILED ✗', passed?'pass':'fail');
 
