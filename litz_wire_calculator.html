@@ -11,6 +11,12 @@
             box-sizing: border-box;
         }
 
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -25,10 +31,12 @@
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 900px;
             width: 100%;
+            max-width: 1100px;
             padding: 40px;
             animation: slideIn 0.5s ease-out;
+            max-height: 95vh;
+            overflow-y: auto;
         }
 
         @keyframes slideIn {
@@ -58,10 +66,10 @@
 
         .section {
             margin-bottom: 30px;
-            padding: 20px;
+            padding: 25px;
             background: #f8f9fa;
             border-radius: 12px;
-            border-left: 4px solid #667eea;
+            border-left: 5px solid #667eea;
         }
 
         .section h2 {
@@ -125,17 +133,44 @@
             gap: 20px;
         }
 
+        @media (max-width: 800px) {
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                border-radius: 10px;
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+
         @media (max-width: 600px) {
             .input-group {
                 grid-template-columns: 1fr;
             }
-        }
-
-        .button-group {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
+            
+            body {
+                padding: 10px;
+                align-items: flex-start;
+            }
+            
+            .container {
+                border-radius: 15px;
+                padding: 15px;
+                width: 100%;
+            }
+            
+            h1 {
+                font-size: 1.5em;
+            }
+            
+            .section {
+                padding: 15px;
+            }
         }
 
         button {
@@ -148,6 +183,8 @@
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-right: 10px;
+            margin-bottom: 10px;
         }
 
         .btn-primary {
@@ -205,6 +242,7 @@
             align-items: center;
             padding: 12px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            flex-wrap: wrap;
         }
 
         .result-item:last-child {
@@ -214,6 +252,7 @@
         .result-label {
             font-weight: 600;
             font-size: 0.95em;
+            flex: 1;
         }
 
         .result-value {
@@ -222,6 +261,7 @@
             border-radius: 6px;
             font-weight: 700;
             font-size: 1.1em;
+            text-align: right;
         }
 
         .error-box {
@@ -271,62 +311,9 @@
             margin-right: 8px;
         }
 
-        .toggle-section {
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border: 2px solid #e0e0e0;
-            transition: all 0.3s ease;
-        }
-
-        .toggle-section:hover {
-            border-color: #667eea;
-            background: #f8f9fa;
-        }
-
-        .toggle-section.active {
-            border-color: #667eea;
-            background: #f0f3ff;
-        }
-
-        .toggle-arrow {
-            transition: transform 0.3s ease;
-            font-size: 1.2em;
-        }
-
-        .toggle-section.active .toggle-arrow {
-            transform: rotate(180deg);
-        }
-
-        .toggle-content {
-            display: none;
-            margin-top: 15px;
-        }
-
-        .toggle-content.show {
-            display: block;
-            animation: slideDown 0.3s ease-out;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                max-height: 0;
-            }
-            to {
-                opacity: 1;
-                max-height: 500px;
-            }
-        }
-
         .grid-results {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
             margin-top: 20px;
         }
@@ -382,6 +369,7 @@
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s ease;
+            margin: 0;
         }
 
         .tab-button.active {
@@ -417,20 +405,18 @@
             border-top: 1px solid #e0e0e0;
         }
 
-        .reset-btn {
-            background: #999;
-            color: white;
-        }
-
-        .reset-btn:hover {
-            background: #777;
-        }
-
         small {
             display: block;
             color: #999;
             margin-top: 5px;
             font-size: 0.8em;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -441,7 +427,7 @@
 
         <!-- Section 1: Frequency and Skin Depth Analysis -->
         <div class="section">
-            <h2>Frequency & Skin Depth Analysis</h2>
+            <h2>Step 1: Frequency & Skin Depth Analysis</h2>
             
             <div class="form-group">
                 <label for="frequency">Operating Frequency (Hz)</label>
@@ -449,7 +435,7 @@
                 <small>Range: 60 Hz to 2.8 MHz</small>
             </div>
 
-            <button class="btn-primary" onclick="calculateSkinDepth()">Calculate Skin Depth</button>
+            <button class="btn-primary" onclick="calculateSkinDepth()">Calculate Skin Depth & Get Recommendation</button>
 
             <div class="result-box" id="skinDepthResult">
                 <div class="result-item">
@@ -475,17 +461,27 @@
 
         <hr>
 
-        <!-- Section 2: Wire Specification Selection -->
+        <!-- Section 2: Strand Diameter Selection -->
         <div class="section">
-            <h2>Wire Specification Selection</h2>
+            <h2>Step 2: Strand Diameter Selection</h2>
 
             <div class="form-group">
-                <label for="strandDia">Single Strand Diameter (mm)</label>
+                <label for="strandDia">Single Strand Wire Diameter (mm)</label>
                 <input type="number" id="strandDia" placeholder="e.g., 0.32" min="0.01" step="0.01">
+                <small>Enter the diameter of each strand in your Litz wire</small>
             </div>
 
+            <div class="error-box" id="strandDiaError"></div>
+        </div>
+
+        <hr>
+
+        <!-- Section 3: Wire Specification Selection -->
+        <div class="section">
+            <h2>Step 3: Solid Wire Specification Selection</h2>
+
             <div class="form-group">
-                <label>Wire Specification Method</label>
+                <label>Select Wire Specification Method</label>
                 <div class="tabs">
                     <button class="tab-button active" onclick="switchTab(event, 'diameterTab')">By Diameter</button>
                     <button class="tab-button" onclick="switchTab(event, 'awgTab')">By AWG</button>
@@ -503,7 +499,7 @@
                 <!-- Tab 2: AWG -->
                 <div id="awgTab" class="tab-content">
                     <div class="form-group">
-                        <label for="wireAWG">AWG Number</label>
+                        <label for="wireAWG">AWG Number (0-50)</label>
                         <select id="wireAWG">
                             <option value="">-- Select AWG --</option>
                             <option value="0">AWG 0 (8.25 mm)</option>
@@ -539,41 +535,66 @@
                 <!-- Tab 3: SWG -->
                 <div id="swgTab" class="tab-content">
                     <div class="form-group">
-                        <label for="wireSWG">SWG Number</label>
+                        <label for="wireSWG">SWG Number (0-50)</label>
                         <select id="wireSWG">
                             <option value="">-- Select SWG --</option>
                             <option value="0">SWG 0 (8.23 mm)</option>
+                            <option value="1">SWG 1 (7.62 mm)</option>
                             <option value="2">SWG 2 (7.01 mm)</option>
+                            <option value="3">SWG 3 (6.40 mm)</option>
                             <option value="4">SWG 4 (5.89 mm)</option>
+                            <option value="5">SWG 5 (5.38 mm)</option>
                             <option value="6">SWG 6 (4.88 mm)</option>
+                            <option value="7">SWG 7 (4.47 mm)</option>
                             <option value="8">SWG 8 (4.06 mm)</option>
+                            <option value="9">SWG 9 (3.66 mm)</option>
                             <option value="10">SWG 10 (3.25 mm)</option>
+                            <option value="11">SWG 11 (2.95 mm)</option>
                             <option value="12">SWG 12 (2.64 mm)</option>
+                            <option value="13">SWG 13 (2.34 mm)</option>
                             <option value="14">SWG 14 (2.03 mm)</option>
+                            <option value="15">SWG 15 (1.83 mm)</option>
                             <option value="16">SWG 16 (1.63 mm)</option>
+                            <option value="17">SWG 17 (1.42 mm)</option>
                             <option value="18">SWG 18 (1.22 mm)</option>
+                            <option value="19">SWG 19 (1.02 mm)</option>
                             <option value="20">SWG 20 (0.914 mm)</option>
+                            <option value="21">SWG 21 (0.813 mm)</option>
                             <option value="22">SWG 22 (0.711 mm)</option>
+                            <option value="23">SWG 23 (0.610 mm)</option>
                             <option value="24">SWG 24 (0.559 mm)</option>
+                            <option value="25">SWG 25 (0.508 mm)</option>
                             <option value="26">SWG 26 (0.457 mm)</option>
+                            <option value="27">SWG 27 (0.417 mm)</option>
                             <option value="28">SWG 28 (0.376 mm)</option>
+                            <option value="29">SWG 29 (0.345 mm)</option>
                             <option value="30">SWG 30 (0.315 mm)</option>
+                            <option value="31">SWG 31 (0.295 mm)</option>
                             <option value="32">SWG 32 (0.274 mm)</option>
+                            <option value="33">SWG 33 (0.254 mm)</option>
                             <option value="34">SWG 34 (0.234 mm)</option>
+                            <option value="35">SWG 35 (0.213 mm)</option>
                             <option value="36">SWG 36 (0.193 mm)</option>
+                            <option value="37">SWG 37 (0.173 mm)</option>
                             <option value="38">SWG 38 (0.152 mm)</option>
+                            <option value="39">SWG 39 (0.132 mm)</option>
                             <option value="40">SWG 40 (0.122 mm)</option>
+                            <option value="41">SWG 41 (0.112 mm)</option>
                             <option value="42">SWG 42 (0.102 mm)</option>
+                            <option value="43">SWG 43 (0.091 mm)</option>
                             <option value="44">SWG 44 (0.081 mm)</option>
+                            <option value="45">SWG 45 (0.071 mm)</option>
                             <option value="46">SWG 46 (0.061 mm)</option>
-                            <option value="48">SWG 48 (0.051 mm)</option>
+                            <option value="47">SWG 47 (0.051 mm)</option>
+                            <option value="48">SWG 48 (0.041 mm)</option>
+                            <option value="49">SWG 49 (0.030 mm)</option>
                             <option value="50">SWG 50 (0.025 mm)</option>
                         </select>
                     </div>
                 </div>
             </div>
 
-            <button class="btn-primary" onclick="calculateWireSpec()">Calculate Wire Specification</button>
+            <button class="btn-primary" onclick="calculateWireSpec()">Confirm Wire Specification</button>
 
             <div class="result-box" id="wireSpecResult">
                 <div class="result-item">
@@ -587,22 +608,11 @@
 
         <hr>
 
-        <!-- Section 3: Number of Strands Calculation -->
+        <!-- Section 4: Number of Strands Calculation -->
         <div class="section">
-            <h2>Litz Wire Configuration</h2>
+            <h2>Step 4: Calculate Number of Strands (By Area)</h2>
 
-            <div class="input-group">
-                <div class="form-group">
-                    <label for="strandDiaCalc">Strand Diameter (mm)</label>
-                    <input type="number" id="strandDiaCalc" placeholder="e.g., 0.32" min="0.01" step="0.01">
-                </div>
-                <div class="form-group">
-                    <label for="solidWireDiaCalc">Solid Wire Diameter (mm)</label>
-                    <input type="number" id="solidWireDiaCalc" placeholder="e.g., 1.0" min="0.01" step="0.01">
-                </div>
-            </div>
-
-            <button class="btn-primary" onclick="calculateStrands()">Calculate Strands by Area</button>
+            <p style="color: #666; margin-bottom: 15px;">Based on equivalent cross-sectional area</p>
 
             <div class="result-box" id="strandsResult">
                 <div class="result-item">
@@ -622,15 +632,15 @@
             <div class="error-box" id="strandsError"></div>
 
             <div class="info-box">
-                <span class="info-icon">The number of strands is calculated to match the cross-sectional area of the equivalent solid wire.</span>
+                <span class="info-icon">The number of strands is calculated to match the cross-sectional area of the equivalent solid wire. This ensures the Litz wire has similar electrical properties to the solid wire.</span>
             </div>
         </div>
 
         <hr>
 
-        <!-- Section 4: Current Carrying Capacity -->
+        <!-- Section 5: Current Carrying Capacity -->
         <div class="section">
-            <h2>Current Carrying Capacity Analysis</h2>
+            <h2>Step 5: Calculate Number of Strands (By Current)</h2>
 
             <div class="input-group">
                 <div class="form-group">
@@ -644,7 +654,7 @@
                 </div>
             </div>
 
-            <button class="btn-primary" onclick="calculateCurrentCapacity()">Calculate Current Capacity</button>
+            <button class="btn-primary" onclick="calculateCurrentCapacity()">Calculate Strands by Current</button>
 
             <div class="result-box" id="currentCapacityResult">
                 <div class="result-item">
@@ -660,7 +670,7 @@
             <div class="error-box" id="currentCapacityError"></div>
 
             <div class="info-box">
-                <span class="info-icon">This calculation determines the number of strands needed to maintain the same current carrying capacity as the solid wire.</span>
+                <span class="info-icon">This calculation determines the number of strands needed to maintain the same current carrying capacity as the solid wire, ensuring proper power handling.</span>
             </div>
         </div>
 
@@ -669,8 +679,10 @@
         <!-- Summary Report -->
         <div class="section">
             <h2>Summary Report</h2>
-            <button class="btn-primary" onclick="generateReport()">Generate Full Report</button>
-            <button class="btn-secondary" onclick="resetForm()">Reset All</button>
+            <div class="button-container">
+                <button class="btn-primary" onclick="generateReport()">Generate Full Report</button>
+                <button class="btn-secondary" onclick="resetForm()">Reset All</button>
+            </div>
 
             <div class="result-box" id="fullReport">
                 <div id="reportContent"></div>
@@ -678,8 +690,8 @@
         </div>
 
         <div class="footer">
-            <p>⚡ Litz Wire Coil Design Calculator v1.0</p>
-            <p>Designed for RF and high-frequency applications | © 2026</p>
+            <p>⚡ Litz Wire Coil Design Calculator v2.0</p>
+            <p>Based on MATLAB Litz Wire Design Tool | © 2026</p>
         </div>
     </div>
 
@@ -688,7 +700,7 @@
         const MU_0 = 4 * Math.PI * 1e-7; // H/m
         const SIGMA = 5.8e7; // S/m (Copper conductivity)
 
-        // AWG to diameter conversion table
+        // AWG to diameter conversion table (in mm)
         const AWG_DIAMETERS = {
             0: 8.2516, 1: 7.3482, 2: 6.5405, 3: 5.8294, 4: 5.1892, 5: 4.6228,
             6: 4.1148, 7: 3.6652, 8: 3.2639, 9: 2.9083, 10: 2.5882, 11: 2.3052,
@@ -702,16 +714,19 @@
         };
 
         // SWG to diameter conversion table (in mm)
-        const SWG_DIAMETERS = {
-            0: 8.23, 1: 7.62, 2: 7.01, 3: 6.40, 4: 5.89, 5: 5.38, 6: 4.88,
-            7: 4.47, 8: 4.06, 9: 3.66, 10: 3.25, 11: 2.95, 12: 2.64, 13: 2.34,
-            14: 2.03, 15: 1.83, 16: 1.63, 17: 1.42, 18: 1.22, 19: 1.02, 20: 0.914,
-            21: 0.813, 22: 0.711, 23: 0.610, 24: 0.559, 25: 0.508, 26: 0.457,
-            27: 0.417, 28: 0.376, 29: 0.345, 30: 0.315, 31: 0.295, 32: 0.274,
-            33: 0.254, 34: 0.234, 35: 0.213, 36: 0.193, 37: 0.173, 38: 0.152,
-            39: 0.132, 40: 0.122, 41: 0.112, 42: 0.102, 43: 0.091, 44: 0.081,
-            45: 0.071, 46: 0.061, 47: 0.051, 48: 0.041, 49: 0.031, 50: 0.025
-        };
+        const SWG_DIAMETERS = [
+            8.23, 7.62, 7.01, 6.40, 5.89,
+            5.38, 4.88, 4.47, 4.06, 3.66,
+            3.25, 2.95, 2.64, 2.34, 2.03,
+            1.83, 1.63, 1.42, 1.22, 1.02,
+            0.914, 0.813, 0.711, 0.610, 0.559,
+            0.508, 0.457, 0.417, 0.376, 0.345,
+            0.315, 0.295, 0.274, 0.254, 0.234,
+            0.213, 0.193, 0.173, 0.152, 0.132,
+            0.122, 0.112, 0.102, 0.091, 0.081,
+            0.071, 0.061, 0.051, 0.041, 0.030,
+            0.025
+        ];
 
         // Frequency recommendations
         const FREQUENCY_RANGES = [
@@ -791,7 +806,7 @@
             resultBox.classList.remove('show');
 
             if (!strandDia || strandDia <= 0) {
-                errorBox.textContent = '❌ Please enter a valid strand diameter';
+                errorBox.textContent = '❌ Please enter strand diameter first (Step 2)';
                 errorBox.classList.add('show');
                 return;
             }
@@ -808,7 +823,7 @@
                 }
             } else if (document.getElementById('awgTab').classList.contains('show')) {
                 const awg = parseInt(document.getElementById('wireAWG').value);
-                if (awg === '' || awg < 0 || awg > 50) {
+                if (awg === '' || awg < 0 || awg > 50 || isNaN(awg)) {
                     errorBox.textContent = '❌ Please select a valid AWG';
                     errorBox.classList.add('show');
                     return;
@@ -816,7 +831,7 @@
                 wireDia = AWG_DIAMETERS[awg];
             } else if (document.getElementById('swgTab').classList.contains('show')) {
                 const swg = parseInt(document.getElementById('wireSWG').value);
-                if (swg === '' || swg < 0 || swg > 50) {
+                if (swg === '' || swg < 0 || swg > 50 || isNaN(swg)) {
                     errorBox.textContent = '❌ Please select a valid SWG';
                     errorBox.classList.add('show');
                     return;
@@ -827,34 +842,19 @@
             if (wireDia !== null && wireDia > 0) {
                 document.getElementById('selectedDia').textContent = wireDia.toFixed(5);
                 resultBox.classList.add('show');
+
+                // Automatically calculate strands
+                calculateStrandsAuto(strandDia, wireDia);
             }
         }
 
-        // Calculate number of strands
-        function calculateStrands() {
-            const strandDia = parseFloat(document.getElementById('strandDiaCalc').value);
-            const solidWireDia = parseFloat(document.getElementById('solidWireDiaCalc').value);
-            const errorBox = document.getElementById('strandsError');
+        // Auto-calculate strands when wire spec is confirmed
+        function calculateStrandsAuto(strandDia, wireDia) {
             const resultBox = document.getElementById('strandsResult');
-
-            errorBox.classList.remove('show');
-            resultBox.classList.remove('show');
-
-            if (!strandDia || strandDia <= 0) {
-                errorBox.textContent = '❌ Please enter a valid strand diameter';
-                errorBox.classList.add('show');
-                return;
-            }
-
-            if (!solidWireDia || solidWireDia <= 0) {
-                errorBox.textContent = '❌ Please enter a valid solid wire diameter';
-                errorBox.classList.add('show');
-                return;
-            }
 
             // Calculate areas
             const aStrand = Math.PI * Math.pow(strandDia / 2, 2);
-            const aSolid = Math.PI * Math.pow(solidWireDia / 2, 2);
+            const aSolid = Math.PI * Math.pow(wireDia / 2, 2);
             const numStrands = Math.ceil(aSolid / aStrand);
 
             document.getElementById('strandArea').textContent = aStrand.toFixed(5);
@@ -867,7 +867,7 @@
         // Calculate current carrying capacity
         function calculateCurrentCapacity() {
             const solidWireCurrentCap = parseFloat(document.getElementById('solidWireCurrentCap').value);
-            const strandDiaCalc = parseFloat(document.getElementById('strandDiaCalc').value);
+            const strandDiaCalc = parseFloat(document.getElementById('strandDia').value);
             const currentDensity = parseFloat(document.getElementById('currentDensity').value);
             const errorBox = document.getElementById('currentCapacityError');
             const resultBox = document.getElementById('currentCapacityResult');
@@ -882,7 +882,7 @@
             }
 
             if (!strandDiaCalc || strandDiaCalc <= 0) {
-                errorBox.textContent = '❌ Please enter a valid strand diameter';
+                errorBox.textContent = '❌ Please enter strand diameter first (Step 2)';
                 errorBox.classList.add('show');
                 return;
             }
@@ -907,8 +907,8 @@
         // Generate full report
         function generateReport() {
             const frequency = parseFloat(document.getElementById('frequency').value) || 0;
-            const strandDia = parseFloat(document.getElementById('strandDiaCalc').value) || 0;
-            const solidWireDia = parseFloat(document.getElementById('solidWireDiaCalc').value) || 0;
+            const strandDia = parseFloat(document.getElementById('strandDia').value) || 0;
+            const selectedDia = parseFloat(document.getElementById('selectedDia').textContent) || 0;
             const solidWireCurrentCap = parseFloat(document.getElementById('solidWireCurrentCap').value) || 0;
 
             let report = '<div class="grid-results">';
@@ -920,18 +920,24 @@
                 report += `<div class="result-card"><div class="result-card-label">Skin Depth</div><div class="result-card-value">${deltaMm.toFixed(4)}</div><div class="result-card-unit">mm</div></div>`;
             }
 
-            if (strandDia > 0 && solidWireDia > 0) {
-                const aStrand = Math.PI * Math.pow(strandDia / 2, 2);
-                const aSolid = Math.PI * Math.pow(solidWireDia / 2, 2);
-                const numStrands = Math.ceil(aSolid / aStrand);
+            if (strandDia > 0) {
                 report += `<div class="result-card"><div class="result-card-label">Strand Diameter</div><div class="result-card-value">${strandDia.toFixed(3)}</div><div class="result-card-unit">mm</div></div>`;
-                report += `<div class="result-card"><div class="result-card-label">Solid Wire Diameter</div><div class="result-card-value">${solidWireDia.toFixed(3)}</div><div class="result-card-unit">mm</div></div>`;
-                report += `<div class="result-card"><div class="result-card-label">Number of Strands</div><div class="result-card-value">${numStrands}</div><div class="result-card-unit">strands</div></div>`;
+            }
+
+            if (selectedDia > 0) {
+                report += `<div class="result-card"><div class="result-card-label">Solid Wire Diameter</div><div class="result-card-value">${selectedDia.toFixed(4)}</div><div class="result-card-unit">mm</div></div>`;
+            }
+
+            if (strandDia > 0 && selectedDia > 0) {
+                const aStrand = Math.PI * Math.pow(strandDia / 2, 2);
+                const aSolid = Math.PI * Math.pow(selectedDia / 2, 2);
+                const numStrands = Math.ceil(aSolid / aStrand);
+                report += `<div class="result-card"><div class="result-card-label">Number of Strands (Area)</div><div class="result-card-value">${numStrands}</div><div class="result-card-unit">strands</div></div>`;
             }
 
             if (solidWireCurrentCap > 0 && strandDia > 0) {
                 const aStrand = Math.PI * Math.pow(strandDia / 2, 2);
-                const currentDensity = parseFloat(document.getElementById('currentDensity').value);
+                const currentDensity = parseFloat(document.getElementById('currentDensity').value) || 5;
                 const iStrand = currentDensity * aStrand;
                 const numStrandsCurrent = Math.ceil(solidWireCurrentCap / iStrand);
                 report += `<div class="result-card"><div class="result-card-label">Current Capacity</div><div class="result-card-value">${solidWireCurrentCap.toFixed(2)}</div><div class="result-card-unit">A</div></div>`;
@@ -952,8 +958,6 @@
             document.getElementById('wireDia').value = '';
             document.getElementById('wireAWG').value = '';
             document.getElementById('wireSWG').value = '';
-            document.getElementById('strandDiaCalc').value = '';
-            document.getElementById('solidWireDiaCalc').value = '';
             document.getElementById('solidWireCurrentCap').value = '';
             document.getElementById('currentDensity').value = '5';
 
@@ -967,8 +971,7 @@
                 event.preventDefault();
                 const activeElement = document.activeElement;
                 if (activeElement.id === 'frequency') calculateSkinDepth();
-                else if (activeElement.id === 'strandDia' || activeElement.id === 'wireDia' || activeElement.id === 'wireAWG' || activeElement.id === 'wireSWG') calculateWireSpec();
-                else if (activeElement.id === 'strandDiaCalc' || activeElement.id === 'solidWireDiaCalc') calculateStrands();
+                else if (activeElement.id === 'wireDia' || activeElement.id === 'wireAWG' || activeElement.id === 'wireSWG') calculateWireSpec();
                 else if (activeElement.id === 'solidWireCurrentCap' || activeElement.id === 'currentDensity') calculateCurrentCapacity();
             }
         });
