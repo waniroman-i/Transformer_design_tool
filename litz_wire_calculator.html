@@ -370,6 +370,7 @@
             font-weight: 600;
             transition: all 0.3s ease;
             margin: 0;
+            font-size: 0.9em;
         }
 
         .tab-button.active {
@@ -418,6 +419,13 @@
             flex-wrap: wrap;
             margin-top: 20px;
         }
+
+        .strand-confirm-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -463,13 +471,15 @@
 
         <!-- Section 2: Strand Diameter Selection -->
         <div class="section">
-            <h2>Step 2: Strand Diameter Selection</h2>
+            <h2>Step 2: Enter Single Strand Wire Diameter</h2>
 
             <div class="form-group">
                 <label for="strandDia">Single Strand Wire Diameter (mm)</label>
                 <input type="number" id="strandDia" placeholder="e.g., 0.32" min="0.01" step="0.01">
                 <small>Enter the diameter of each strand in your Litz wire</small>
             </div>
+
+            <button class="btn-primary strand-confirm-btn" onclick="confirmStrandDiameter()">Confirm Strand Diameter</button>
 
             <div class="error-box" id="strandDiaError"></div>
         </div>
@@ -690,7 +700,7 @@
         </div>
 
         <div class="footer">
-            <p>⚡ Litz Wire Coil Design Calculator v2.0</p>
+            <p>⚡ Litz Wire Coil Design Calculator v2.1</p>
             <p>Based on MATLAB Litz Wire Design Tool | © 2026</p>
         </div>
     </div>
@@ -699,6 +709,8 @@
         // Constants
         const MU_0 = 4 * Math.PI * 1e-7; // H/m
         const SIGMA = 5.8e7; // S/m (Copper conductivity)
+
+        let strandDiameterConfirmed = false;
 
         // AWG to diameter conversion table (in mm)
         const AWG_DIAMETERS = {
@@ -754,6 +766,24 @@
             event.target.classList.add('active');
         }
 
+        // Confirm strand diameter
+        function confirmStrandDiameter() {
+            const strandDia = parseFloat(document.getElementById('strandDia').value);
+            const errorBox = document.getElementById('strandDiaError');
+
+            errorBox.classList.remove('show');
+
+            if (!strandDia || strandDia <= 0) {
+                errorBox.textContent = '❌ Please enter a valid strand diameter';
+                errorBox.classList.add('show');
+                return;
+            }
+
+            strandDiameterConfirmed = true;
+            errorBox.textContent = '';
+            alert('✅ Strand diameter of ' + strandDia.toFixed(2) + ' mm confirmed! Proceed to Step 3.');
+        }
+
         // Calculate skin depth
         function calculateSkinDepth() {
             const frequency = parseFloat(document.getElementById('frequency').value);
@@ -806,7 +836,13 @@
             resultBox.classList.remove('show');
 
             if (!strandDia || strandDia <= 0) {
-                errorBox.textContent = '❌ Please enter strand diameter first (Step 2)';
+                errorBox.textContent = '❌ Please enter and confirm strand diameter first (Step 2)';
+                errorBox.classList.add('show');
+                return;
+            }
+
+            if (!strandDiameterConfirmed) {
+                errorBox.textContent = '❌ Please click "Confirm Strand Diameter" button in Step 2 first';
                 errorBox.classList.add('show');
                 return;
             }
@@ -961,6 +997,8 @@
             document.getElementById('solidWireCurrentCap').value = '';
             document.getElementById('currentDensity').value = '5';
 
+            strandDiameterConfirmed = false;
+
             document.querySelectorAll('.result-box').forEach(box => box.classList.remove('show'));
             document.querySelectorAll('.error-box').forEach(box => box.classList.remove('show'));
         }
@@ -971,6 +1009,7 @@
                 event.preventDefault();
                 const activeElement = document.activeElement;
                 if (activeElement.id === 'frequency') calculateSkinDepth();
+                else if (activeElement.id === 'strandDia') confirmStrandDiameter();
                 else if (activeElement.id === 'wireDia' || activeElement.id === 'wireAWG' || activeElement.id === 'wireSWG') calculateWireSpec();
                 else if (activeElement.id === 'solidWireCurrentCap' || activeElement.id === 'currentDensity') calculateCurrentCapacity();
             }
