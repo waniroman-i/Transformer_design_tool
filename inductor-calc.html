@@ -1,1 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resonant Converter Inductor Designer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0e14;
+            --panel: #111720;
+            --border: #1e2d3d;
+            --accent: #00d4ff;
+            --accent2: #ff6b35;
+            --pass: #00e676;
+            --fail: #ff3d57;
+            --text: #cdd9e5;
+            --muted: #4a6070;
+            --heading: #e8f4f8;
+            --warn: #ffd166;
+            --eq-bg: #0d1520;
+            --grid-color: rgba(0, 212, 255, 0.03);
+            --input-bg: #0d1520;
+        }
+
+        body.light {
+            --bg: #f0f4f8;
+            --panel: #ffffff;
+            --border: #c8d8e8;
+            --accent: #0077aa;
+            --accent2: #c94d10;
+            --pass: #0a8a4a;
+            --fail: #cc2233;
+            --text: #2d3e50;
+            --muted: #7a92a8;
+            --heading: #0d1e2e;
+            --warn: #a06800;
+            --eq-bg: #e6f0f8;
+            --grid-color: rgba(0, 100, 160, 0.05);
+            --input-bg: #f5f9ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Barlow', sans-serif;
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 18px;
+            right: 24px;
+            z-index: 100;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            color: var(--accent);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            padding: 8px 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            letter-spacing: 0.08em;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent);
+        }
+
+        .theme-toggle .tog-icon {
+            font-size: 16px;
+            transition: transform 0.4s;
+            margin-right: 6px;
+        }
+
+        body.light .theme-toggle .tog-icon {
+            transform: rotate(20deg);
+        }
+
+        .shell {
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        header {
+            display: flex;
+            align-items: flex-end;
+            gap: 18px;
+            margin-bottom: 48px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 24px;
+        }
+
+        .logo-mark {
+            width: 48px;
+            height: 48px;
+            border: 2px solid var(--accent);
+            display: grid;
+            place-items: center;
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--accent);
+            font-size: 18px;
+            flex-shrink: 0;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+        }
+
+        header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--heading);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        header p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 3px;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .step {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            margin-bottom: 24px;
+            padding: 28px 32px;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .step.hidden {
+            display: none;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--accent);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .step h2 {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--heading);
+            margin-bottom: 20px;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 12px;
+            color: var(--muted);
+            font-family: 'Share Tech Mono', monospace;
+            letter-spacing: 0.05em;
+        }
+
+        input[type="number"],
+        select {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--heading);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 15px;
+            padding: 10px 14px;
+            outline: none;
+            transition: border 0.2s;
+            border-radius: 4px;
+        }
+
+        input[type="number"]:focus,
+        select:focus {
+            border-color: var(--accent);
+        }
+
+        input[type="number"]::placeholder {
+            color: var(--muted);
+        }
+
+        .btn {
+            font-family: 'Barlow', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 12px 28px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+            margin-top: 24px;
+        }
+
+        .btn-primary:hover {
+            background: #33ddff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            margin-top: 12px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 212, 255, 0.08);
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--accent2);
+            border: 1px solid var(--accent2);
+            margin-top: 12px;
+            margin-left: 12px;
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 107, 53, 0.08);
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-key {
+            color: var(--muted);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+        }
+
+        .result-val {
+            color: var(--heading);
+            font-family: 'Share Tech Mono', monospace;
+            font-weight: 600;
+        }
+
+        .result-val.pass {
+            color: var(--pass);
+        }
+
+        .result-val.fail {
+            color: var(--fail);
+        }
+
+        .result-val.warn {
+            color: var(--warn);
+        }
+
+        .eq-toggle {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--accent);
+            cursor: pointer;
+            letter-spacing: 0.08em;
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            display: inline-block;
+            margin-bottom: 12px;
+            background: transparent;
+            transition: all 0.2s;
+        }
+
+        .eq-toggle:hover {
+            background: rgba(0, 212, 255, 0.06);
+        }
+
+        .eq-box {
+            background: var(--eq-bg);
+            border: 1px solid var(--border);
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .eq-box.open {
+            display: block;
+        }
+
+        .eq-box h4 {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--accent);
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+        }
+
+        .eq-list {
+            list-style: none;
+        }
+
+        .eq-list li {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            color: var(--text);
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(30, 45, 61, 0.6);
+            line-height: 1.6;
+        }
+
+        .eq-list li:last-child {
+            border-bottom: none;
+        }
+
+        .eq-name {
+            color: var(--muted);
+            display: inline-block;
+            width: 80px;
+        }
+
+        .eq-formula {
+            color: var(--heading);
+        }
+
+        .eq-note {
+            color: var(--muted);
+            font-size: 11px;
+            display: block;
+            margin-top: 2px;
+            padding-left: 80px;
+        }
+
+        .badge {
+            display: inline-block;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            padding: 2px 8px;
+            letter-spacing: 0.08em;
+            margin-left: 8px;
+            vertical-align: middle;
+            background: rgba(0, 212, 255, 0.15);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        .swg-info {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .swg-info span {
+            color: var(--accent);
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            max-height: 320px;
+            overflow-y: auto;
+            margin-top: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+        }
+
+        thead th {
+            background: var(--eq-bg);
+            color: var(--accent);
+            padding: 10px 14px;
+            text-align: left;
+            letter-spacing: 0.08em;
+            font-size: 11px;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        tbody tr {
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        tbody tr:hover {
+            background: rgba(0, 212, 255, 0.06);
+        }
+
+        tbody tr.ok-row {
+            border-left: 2px solid var(--pass);
+        }
+
+        tbody tr.selected-row {
+            background: rgba(0, 212, 255, 0.12) !important;
+            outline: 1px solid var(--accent);
+        }
+
+        tbody td {
+            padding: 9px 14px;
+            color: var(--text);
+            border-bottom: 1px solid rgba(30, 45, 61, 0.6);
+        }
+
+        .ok-badge {
+            color: var(--pass);
+            font-size: 10px;
+            letter-spacing: 0.1em;
+        }
+
+        .sel-display {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 13px;
+            color: var(--accent);
+            min-height: 20px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: var(--eq-bg);
+            border: 1px solid var(--border);
+        }
+
+        .result-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 4px;
+            text-align: center;
+            margin: 8px;
+        }
+
+        .result-card-value {
+            font-size: 24px;
+            color: var(--accent);
+            font-weight: 700;
+            margin-top: 8px;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .result-card-label {
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">
+    <span class="tog-icon">🌙</span><span id="theme-label">LIGHT MODE</span>
+</button>
+
+<div class="shell">
+
+    <header>
+        <div class="logo-mark">⚛</div>
+        <div>
+            <h1>Resonant Converter Inductor Designer</h1>
+            <p>// ferrite core · SWG wire selection · area product · window factor</p>
+        </div>
+    </header>
+
+    <!-- STEP 1: Design Parameters -->
+    <div class="step" id="step1">
+        <div class="step-label">Step 01</div>
+        <h2>Design Specifications</h2>
+        <span class="eq-toggle" onclick="toggleEq('eq1')">⟩ View Equations</span>
+        <div class="eq-box" id="eq1">
+            <h4>// INDUCTOR DESIGN EQUATIONS</h4>
+            <ul class="eq-list">
+                <li><span class="eq-name">Ap</span><span class="eq-formula">= (L × I_rms × I_peak × 10⁶) / (Bm × J × kw)  [mm⁴]</span><span class="eq-note">Area product — select core ≥ this value</span></li>
+                <li><span class="eq-name">A_conductor</span><span class="eq-formula">= I_rms / J  [mm²]</span><span class="eq-note">Minimum conductor area for current density</span></li>
+                <li><span class="eq-name">N</span><span class="eq-formula">= ceil( (L × I_peak) / (Bm × Ac) )  [turns]</span><span class="eq-note">Number of turns required</span></li>
+                <li><span class="eq-name">kw′</span><span class="eq-formula">= (N × A_conductor) / Aw</span><span class="eq-note">Actual winding factor — must be ≤ kw (target)</span></li>
+            </ul>
+        </div>
+
+        <div class="field-grid">
+            <div class="field">
+                <label>L — Desired Inductance (H)</label>
+                <input type="number" id="L" placeholder="e.g. 10e-6" step="any">
+            </div>
+            <div class="field">
+                <label>I_peak — Peak Current (A)</label>
+                <input type="number" id="I_peak" placeholder="e.g. 10" step="any">
+            </div>
+            <div class="field">
+                <label>I_rms — RMS Current (A)</label>
+                <input type="number" id="I_rms" placeholder="e.g. 7" step="any">
+            </div>
+            <div class="field">
+                <label>Bm — Max Flux Density (T)</label>
+                <input type="number" id="Bm" value="0.15" step="0.01" min="0.01" max="0.5">
+            </div>
+            <div class="field">
+                <label>J — Current Density (A/mm²)</label>
+                <input type="number" id="J" value="5" step="0.5" min="0.5" max="20">
+            </div>
+            <div class="field">
+                <label>kw — Winding Factor</label>
+                <input type="number" id="kw" value="0.25" step="0.01" min="0.1" max="0.5">
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="step1Next()">Calculate Area Product →</button>
+    </div>
+
+    <!-- STEP 2: Core Selection -->
+    <div class="step hidden" id="step2">
+        <div class="step-label">Step 02</div>
+        <h2>Core Selection</h2>
+        <div id="ap-result" style="margin-bottom: 20px;"></div>
+
+        <div class="field-grid">
+            <div class="field">
+                <label>Ac — Core Cross-section (mm²)</label>
+                <input type="number" id="Ac" placeholder="e.g. 125" step="any">
+            </div>
+            <div class="field">
+                <label>Aw — Window Area (mm²)</label>
+                <input type="number" id="Aw" placeholder="e.g. 240" step="any">
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="step2Next()">Calculate Turns →</button>
+    </div>
+
+    <!-- STEP 3: Turns & Verification -->
+    <div class="step hidden" id="step3">
+        <div class="step-label">Step 03</div>
+        <h2>Turns & Core Verification</h2>
+        <div id="core-result"></div>
+    </div>
+
+    <!-- STEP 4: Wire Selection -->
+    <div class="step hidden" id="step4">
+        <div class="step-label">Step 04</div>
+        <h2>Wire Selection (SWG)</h2>
+        <div class="swg-info">Required conductor area: <span id="a-min-label"></span> mm²</div>
+
+        <div class="field-grid">
+            <div class="field">
+                <label>Select SWG Wire Gauge</label>
+                <select id="swg-select" onchange="selectSWG()">
+                    <option value="">-- Select Wire --</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>SWG</th>
+                        <th>Nom.Dia (mm)</th>
+                        <th>Area (mm²)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="swg-body"></tbody>
+            </table>
+        </div>
+
+        <div class="sel-display" id="sel-display">No wire selected</div>
+
+        <button class="btn btn-primary" onclick="step4Next()">Verify Wire & Calculate Kw′ →</button>
+    </div>
+
+    <!-- STEP 5: Summary -->
+    <div class="step hidden" id="summary-box">
+        <div class="step-label">Step 05</div>
+        <h2>Design Summary</h2>
+        <span class="eq-toggle" onclick="toggleEq('eq5')">⟩ View Final Equations</span>
+        <div class="eq-box" id="eq5">
+            <ul class="eq-list">
+                <li><span class="eq-name">kw′ Check</span><span class="eq-formula">kw′ = (N × A_conductor) / Aw  ≤  kw_target</span><span class="eq-note">Winding space factor validation</span></li>
+            </ul>
+        </div>
+
+        <div id="summary-rows"></div>
+
+        <div class="summary-grid">
+            <div class="result-card">
+                <div class="result-card-label">INDUCTANCE</div>
+                <div class="result-card-value" id="summary-L"></div>
+            </div>
+            <div class="result-card">
+                <div class="result-card-label">TURNS</div>
+                <div class="result-card-value" id="summary-N"></div>
+            </div>
+            <div class="result-card">
+                <div class="result-card-label">WIRE</div>
+                <div class="result-card-value" id="summary-wire"></div>
+            </div>
+            <div class="result-card">
+                <div class="result-card-label">Kw′ Status</div>
+                <div class="result-card-value" id="summary-kw-status"></div>
+            </div>
+        </div>
+
+        <div style="margin-top: 24px; display: flex; gap: 12px;">
+            <button class="btn btn-secondary" onclick="acceptDesign()">✓ Accept Design</button>
+            <button class="btn btn-danger" onclick="restartDesign()">↺ Restart</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ── SWG Data [SWG, NomDia(mm), Area(mm²)] ────────────────────────────────
+const SWG_DATA = [
+    [50, 0.025, 0.000506], [49, 0.030, 0.000729], [48, 0.041, 0.001297],
+    [47, 0.051, 0.002027], [46, 0.061, 0.002919], [45, 0.071, 0.003973],
+    [44, 0.081, 0.005189], [43, 0.091, 0.006567], [42, 0.102, 0.008107],
+    [41, 0.112, 0.009810], [40, 0.122, 0.011675], [39, 0.132, 0.013701],
+    [38, 0.152, 0.018242], [37, 0.173, 0.024340], [36, 0.193, 0.029270],
+    [35, 0.213, 0.035750], [34, 0.234, 0.042890], [33, 0.254, 0.050670],
+    [32, 0.274, 0.059100], [31, 0.295, 0.068180], [30, 0.315, 0.077910],
+    [29, 0.345, 0.093720], [28, 0.376, 0.111000], [27, 0.417, 0.136300],
+    [26, 0.457, 0.164200], [25, 0.508, 0.202700], [24, 0.559, 0.245200],
+    [23, 0.610, 0.291900], [22, 0.711, 0.397300], [21, 0.813, 0.518900],
+    [20, 0.914, 0.656700], [19, 1.016, 0.810700], [18, 1.219, 1.167000],
+    [17, 1.422, 1.589000], [16, 1.626, 2.075000], [15, 1.829, 2.627000],
+    [14, 2.032, 3.243000], [13, 2.337, 4.289000], [12, 2.642, 5.480000],
+    [11, 2.946, 6.818000], [10, 3.251, 8.302000], [9, 3.658, 10.510000],
+    [8, 4.064, 12.970000]
+];
+
+let state = {};
+
+function show(id) {
+    const el = document.getElementById(id);
+    el.classList.remove('hidden');
+    setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80);
+}
+
+function resultRow(key, val, cls = '') {
+    return `<div class="result-row"><span class="result-key">${key}</span><span class="result-val ${cls}">${val}</span></div>`;
+}
+
+function toggleEq(id) {
+    document.getElementById(id).classList.toggle('open');
+}
+
+function toggleTheme() {
+    const isLight = document.body.classList.toggle('light');
+    document.getElementById('theme-label').textContent = isLight ? 'DARK MODE' : 'LIGHT MODE';
+    document.querySelector('.tog-icon').textContent = isLight ? '☀️' : '🌙';
+    localStorage.setItem('inductor-theme', isLight ? 'light' : 'dark');
+}
+
+// Restore theme preference
+(function() {
+    const saved = localStorage.getItem('inductor-theme');
+    if (saved === 'light') {
+        document.body.classList.add('light');
+        document.getElementById('theme-label').textContent = 'DARK MODE';
+        document.querySelector('.tog-icon').textContent = '☀️';
+    }
+})();
+
+// ── Step 1 ──────────────────────────────────────────────────────────────
+function step1Next() {
+    const L = parseFloat(document.getElementById('L').value);
+    const I_peak = parseFloat(document.getElementById('I_peak').value);
+    const I_rms = parseFloat(document.getElementById('I_rms').value);
+    const Bm = parseFloat(document.getElementById('Bm').value);
+    const J = parseFloat(document.getElementById('J').value);
+    const kw = parseFloat(document.getElementById('kw').value);
+
+    if (!L || !I_peak || !I_rms || !Bm || !J || !kw || L <= 0 || I_peak <= 0 || I_rms <= 0) {
+        alert('Please fill all fields with positive values.');
+        return;
+    }
+
+    Object.assign(state, { L, I_peak, I_rms, Bm, J, kw });
+    state.Ap = (L * I_rms * I_peak * 1e6) / (Bm * J * kw);
+    state.A_conductor = I_rms / J;
+
+    document.getElementById('ap-result').innerHTML =
+        resultRow('Required Area Product (Ap)', state.Ap.toFixed(4) + ' mm⁴') +
+        resultRow('Required Conductor Area', state.A_conductor.toFixed(6) + ' mm²');
+
+    document.getElementById('a-min-label').textContent = state.A_conductor.toFixed(6);
+    show('step2');
+}
+
+// ── Step 2 ──────────────────────────────────────────────────────────────
+function step2Next() {
+    const Ac = parseFloat(document.getElementById('Ac').value);
+    const Aw = parseFloat(document.getElementById('Aw').value);
+
+    if (!Ac || !Aw || Ac <= 0 || Aw <= 0) {
+        alert('Please enter valid core dimensions.');
+        return;
+    }
+
+    Object.assign(state, { Ac, Aw });
+    const Ap_core = Ac * Aw;
+    const coreOk = Ap_core >= state.Ap;
+    state.N = Math.ceil((state.L * state.I_peak * 1e6) / (state.Bm * Ac));
+
+    document.getElementById('core-result').innerHTML =
+        resultRow('Ap required', state.Ap.toFixed(4) + ' mm⁴') +
+        resultRow('Ap_core (Ac × Aw)', Ap_core.toFixed(4) + ' mm⁴', coreOk ? 'pass' : 'fail') +
+        resultRow('Core Status', coreOk ? 'SUITABLE ✓' : 'NOT SUITABLE ✗', coreOk ? 'pass' : 'fail') +
+        resultRow('Number of Turns (N)', state.N);
+
+    // Populate SWG table
+    populateSWGTable();
+    show('step3');
+    show('step4');
+}
+
+// ── SWG Table Population ────────────────────────────────────────────────
+function populateSWGTable() {
+    const tbody = document.getElementById('swg-body');
+    const select = document.getElementById('swg-select');
+    tbody.innerHTML = '';
+    select.innerHTML = '<option value="">-- Select Wire --</option>';
+
+    SWG_DATA.forEach((row, i) => {
+        const [swg, dia, area] = row;
+        const ok = area >= state.A_conductor;
+
+        const tr = document.createElement('tr');
+        if (ok) tr.classList.add('ok-row');
+        tr.innerHTML = `<td>${swg}</td><td>${dia.toFixed(3)}</td><td>${area.toFixed(6)}</td><td>${ok ? '<span class="ok-badge">✔ OK</span>' : ''}`;
+        tr.onclick = () => selectSWGRow(tr, i);
+        tbody.appendChild(tr);
+
+        // Add to dropdown
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `SWG ${swg} (Ø ${dia.toFixed(3)} mm, ${area.toFixed(6)} mm²)`;
+        select.appendChild(opt);
+    });
+}
+
+function selectSWGRow(tr, idx) {
+    document.querySelectorAll('#swg-body tr').forEach(r => r.classList.remove('selected-row'));
+    tr.classList.add('selected-row');
+    selectWire(idx);
+}
+
+function selectSWG() {
+    const idx = parseInt(document.getElementById('swg-select').value);
+    if (idx === '' || isNaN(idx)) return;
+    selectWire(idx);
+    // Highlight row
+    const rows = document.querySelectorAll('#swg-body tr');
+    rows.forEach((r, i) => r.classList.toggle('selected-row', i === idx));
+}
+
+function selectWire(idx) {
+    const [swg, dia, area] = SWG_DATA[idx];
+    state.swg = swg;
+    state.A_selected = area;
+
+    document.getElementById('sel-display').textContent =
+        `SWG ${swg}  |  Ø ${dia.toFixed(3)} mm  |  Area ${area.toFixed(6)} mm²`;
+    document.getElementById('swg-select').value = idx;
+}
+
+// ── Step 4 ──────────────────────────────────────────────────────────────
+function step4Next() {
+    if (!state.swg) {
+        alert('Please select a wire from the table or dropdown.');
+        return;
+    }
+
+    const kw_actual = (state.N * state.A_selected) / state.Aw;
+    state.kw_actual = kw_actual;
+    const passed = kw_actual <= state.kw;
+
+    document.getElementById('summary-rows').innerHTML =
+        resultRow('Inductance', state.L.toFixed(6) + ' H') +
+        resultRow('Peak Current', state.I_peak.toFixed(2) + ' A') +
+        resultRow('RMS Current', state.I_rms.toFixed(2) + ' A') +
+        resultRow('Max Flux Density', state.Bm.toFixed(4) + ' T') +
+        resultRow('Current Density', state.J.toFixed(1) + ' A/mm²') +
+        resultRow('Core Area (Ac)', state.Ac.toFixed(2) + ' mm²') +
+        resultRow('Window Area (Aw)', state.Aw.toFixed(2) + ' mm²') +
+        '<hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">' +
+        resultRow('Wire Selected', 'SWG ' + state.swg) +
+        resultRow('Wire Area', state.A_selected.toFixed(6) + ' mm²') +
+        resultRow('Number of Turns', state.N) +
+        resultRow('Target Winding Factor (kw)', state.kw.toFixed(4)) +
+        resultRow('Actual Winding Factor (kw′)', kw_actual.toFixed(4), passed ? 'pass' : 'fail') +
+        resultRow('Status', passed ? 'PASSED ✓' : 'FAILED ✗', passed ? 'pass' : 'fail');
+
+    document.getElementById('summary-L').textContent = state.L.toFixed(6) + ' H';
+    document.getElementById('summary-N').textContent = state.N;
+    document.getElementById('summary-wire').textContent = 'SWG ' + state.swg;
+    document.getElementById('summary-kw-status').textContent = passed ? '✓ PASS' : '✗ FAIL';
+    document.getElementById('summary-kw-status').className = 'result-card-value ' + (passed ? 'pass' : 'fail');
+
+    show('summary-box');
+}
+
+function acceptDesign() {
+    const status = document.getElementById('summary-kw-status');
+    status.textContent = '✓ LOCKED';
+    status.style.color = 'var(--pass)';
+}
+
+function restartDesign() {
+    state = {};
+    ['step1', 'step2', 'step3', 'step4', 'summary-box'].forEach(id => 
+        document.getElementById(id).classList.add('hidden')
+    );
+    ['L', 'I_peak', 'I_rms', 'Ac', 'Aw'].forEach(id => 
+        document.getElementById(id).value = ''
+    );
+    document.getElementById('Bm').value = '0.15';
+    document.getElementById('J').value = '5';
+    document.getElementById('kw').value = '0.25';
+    document.getElementById('swg-select').value = '';
+    document.getElementById('sel-display').textContent = 'No wire selected';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>
 
