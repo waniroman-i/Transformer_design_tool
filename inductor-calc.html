@@ -578,13 +578,7 @@
                 <label>Aw — Window Area (mm²)</label>
                 <input type="number" id="Aw" placeholder="e.g. 240" step="any">
             </div>
-            <div class="field">
-                <label>Core Multiplier (e.g. 2 for two E-cores)</label>
-                <input type="number" id="multiplier" value="1" step="1" min="1" max="10">
-            </div>
         </div>
-
-        <div id="ap-adjusted-result" style="margin-top: 20px;"></div>
 
         <button class="btn btn-primary" onclick="step2Next()">Calculate Turns →</button>
     </div>
@@ -753,32 +747,19 @@ function step1Next() {
 function step2Next() {
     const Ac = parseFloat(document.getElementById('Ac').value);
     const Aw = parseFloat(document.getElementById('Aw').value);
-    const multiplier = parseFloat(document.getElementById('multiplier').value) || 1;
 
-    if (!Ac || !Aw || Ac <= 0 || Aw <= 0 || multiplier <= 0) {
-        alert('Please enter valid core dimensions and multiplier.');
+    if (!Ac || !Aw || Ac <= 0 || Aw <= 0) {
+        alert('Please enter valid core dimensions.');
         return;
     }
 
-    Object.assign(state, { Ac, Aw, multiplier });
-    
-    // Multiply Ap by the multiplier (multiply for multiple cores)
-    const Ap_adjusted = state.Ap * multiplier;
+    Object.assign(state, { Ac, Aw });
     const Ap_core = Ac * Aw;
-    const coreOk = Ap_core >= Ap_adjusted;
-    
+    const coreOk = Ap_core >= state.Ap;
     state.N = Math.ceil((state.L * state.I_peak * 1e6) / (state.Bm * Ac));
 
-    // Show adjusted calculation
-    document.getElementById('ap-adjusted-result').innerHTML =
-        (multiplier > 1 ? resultRow('Multiplier', multiplier + 'x cores') : '') +
-        resultRow('Adjusted Ap required', Ap_adjusted.toFixed(4) + ' mm⁴') +
-        resultRow('Ap_core (Ac × Aw)', Ap_core.toFixed(4) + ' mm⁴', coreOk ? 'pass' : 'fail') +
-        resultRow('Core Status', coreOk ? 'SUITABLE ✓' : 'NOT SUITABLE ✗', coreOk ? 'pass' : 'fail');
-
     document.getElementById('core-result').innerHTML =
-        resultRow('Ap required (single core)', state.Ap.toFixed(4) + ' mm⁴') +
-        resultRow('Ap adjusted (× multiplier)', Ap_adjusted.toFixed(4) + ' mm⁴') +
+        resultRow('Ap required', state.Ap.toFixed(4) + ' mm⁴') +
         resultRow('Ap_core (Ac × Aw)', Ap_core.toFixed(4) + ' mm⁴', coreOk ? 'pass' : 'fail') +
         resultRow('Core Status', coreOk ? 'SUITABLE ✓' : 'NOT SUITABLE ✗', coreOk ? 'pass' : 'fail') +
         resultRow('Number of Turns (N)', state.N);
@@ -856,7 +837,6 @@ function step4Next() {
         resultRow('RMS Current', state.I_rms.toFixed(2) + ' A') +
         resultRow('Max Flux Density', state.Bm.toFixed(4) + ' T') +
         resultRow('Current Density', state.J.toFixed(1) + ' A/mm²') +
-        resultRow('Core Multiplier', state.multiplier + 'x') +
         resultRow('Core Area (Ac)', state.Ac.toFixed(2) + ' mm²') +
         resultRow('Window Area (Aw)', state.Aw.toFixed(2) + ' mm²') +
         '<hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">' +
@@ -893,7 +873,6 @@ function restartDesign() {
     document.getElementById('Bm').value = '0.15';
     document.getElementById('J').value = '5';
     document.getElementById('kw').value = '0.25';
-    document.getElementById('multiplier').value = '1';
     document.getElementById('swg-select').value = '';
     document.getElementById('sel-display').textContent = 'No wire selected';
     window.scrollTo({ top: 0, behavior: 'smooth' });
