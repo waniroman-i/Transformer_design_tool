@@ -526,7 +526,7 @@
         <div class="eq-box" id="eq1">
             <h4>// INDUCTOR DESIGN EQUATIONS</h4>
             <ul class="eq-list">
-                <li><span class="eq-name">Ap</span><span class="eq-formula">= (L × I_rms × I_peak × 10⁶) / (Bm × J × kw)  [mm⁴]</span><span class="eq-note">Area product — select core ≥ this value</span></li>
+                <li><span class="eq-name">Ap</span><span class="eq-formula">= (L × I_rms × I_peak × 10⁶) / (Bm × J × kw)  [mm⁴]</span><span class="eq-note">Area product — select core based on Ap</span></li>
                 <li><span class="eq-name">A_conductor</span><span class="eq-formula">= I_rms / J  [mm²]</span><span class="eq-note">Minimum conductor area for current density</span></li>
                 <li><span class="eq-name">N</span><span class="eq-formula">= ceil( (L × I_peak) / (Bm × Ac) )  [turns]</span><span class="eq-note">Number of turns required</span></li>
                 <li><span class="eq-name">kw′</span><span class="eq-formula">= (N × A_conductor) / Aw</span><span class="eq-note">Actual winding factor — must be ≤ kw (target)</span></li>
@@ -578,7 +578,13 @@
                 <label>Aw — Window Area (mm²)</label>
                 <input type="number" id="Aw" placeholder="e.g. 240" step="any">
             </div>
+            <div class="field">
+                <label>Core Multiplier (e.g. 2 for two E-cores)</label>
+                <input type="number" id="multiplier" value="1" step="1" min="1" max="10">
+            </div>
         </div>
+
+        <div id="ap-adjusted-result" style="margin-top: 20px;"></div>
 
         <button class="btn btn-primary" onclick="step2Next()">Calculate Turns →</button>
     </div>
@@ -717,7 +723,7 @@ function toggleTheme() {
     }
 })();
 
-// ── Step 1 ──────────────────────────────────────────────────────────────
+// ── Step 1 ────────────────────────────────────────────────────────────────
 function step1Next() {
     const L = parseFloat(document.getElementById('L').value);
     const I_peak = parseFloat(document.getElementById('I_peak').value);
@@ -743,23 +749,36 @@ function step1Next() {
     show('step2');
 }
 
-// ── Step 2 ──────────────────────────────────────────────────────────────
+// ── Step 2 ────────────────────────────────────────────────────────────────
 function step2Next() {
     const Ac = parseFloat(document.getElementById('Ac').value);
     const Aw = parseFloat(document.getElementById('Aw').value);
+    const multiplier = parseFloat(document.getElementById('multiplier').value) || 1;
 
-    if (!Ac || !Aw || Ac <= 0 || Aw <= 0) {
-        alert('Please enter valid core dimensions.');
+    if (!Ac || !Aw || Ac <= 0 || Aw <= 0 || multiplier <= 0) {
+        alert('Please enter valid core dimensions and multiplier.');
         return;
     }
 
-    Object.assign(state, { Ac, Aw });
+    Object.assign(state, { Ac, Aw, multiplier });
+    
+    // Multiply Ap by the multiplier (multiply for multiple cores)
+    const Ap_adjusted = state.Ap * multiplier;
     const Ap_core = Ac * Aw;
-    const coreOk = Ap_core >= state.Ap;
+    const coreOk = Ap_core >= Ap_adjusted;
+    
     state.N = Math.ceil((state.L * state.I_peak * 1e6) / (state.Bm * Ac));
 
+    // Show adjusted calculation
+    document.getElementById('ap-adjusted-result').innerHTML =
+        (multiplier > 1 ? resultRow('Multiplier', multiplier + 'x cores') : '') +
+        resultRow('Adjusted Ap required', Ap_adjusted.toFixed(4) + ' mm⁴') +
+        resultRow('Ap_core (Ac × Aw)', Ap_core.toFixed(4) + ' mm⁴', coreOk ? 'pass' : 'fail') +
+        resultRow('Core Status', coreOk ? 'SUITABLE ✓' : 'NOT SUITABLE ✗', coreOk ? 'pass' : 'fail');
+
     document.getElementById('core-result').innerHTML =
-        resultRow('Ap required', state.Ap.toFixed(4) + ' mm⁴') +
+        resultRow('Ap required (single core)', state.Ap.toFixed(4) + ' mm⁴') +
+        resultRow('Ap adjusted (× multiplier)', Ap_adjusted.toFixed(4) + ' mm⁴') +
         resultRow('Ap_core (Ac × Aw)', Ap_core.toFixed(4) + ' mm⁴', coreOk ? 'pass' : 'fail') +
         resultRow('Core Status', coreOk ? 'SUITABLE ✓' : 'NOT SUITABLE ✗', coreOk ? 'pass' : 'fail') +
         resultRow('Number of Turns (N)', state.N);
@@ -770,7 +789,7 @@ function step2Next() {
     show('step4');
 }
 
-// ── SWG Table Population ────────────────────────────────────────────────
+// ── SWG Table Population ──────────────────────────────────────────────────
 function populateSWGTable() {
     const tbody = document.getElementById('swg-body');
     const select = document.getElementById('swg-select');
@@ -820,7 +839,7 @@ function selectWire(idx) {
     document.getElementById('swg-select').value = idx;
 }
 
-// ── Step 4 ──────────────────────────────────────────────────────────────
+// ── Step 4 ────────────────────────────────────────────────────────────────
 function step4Next() {
     if (!state.swg) {
         alert('Please select a wire from the table or dropdown.');
@@ -837,6 +856,7 @@ function step4Next() {
         resultRow('RMS Current', state.I_rms.toFixed(2) + ' A') +
         resultRow('Max Flux Density', state.Bm.toFixed(4) + ' T') +
         resultRow('Current Density', state.J.toFixed(1) + ' A/mm²') +
+        resultRow('Core Multiplier', state.multiplier + 'x') +
         resultRow('Core Area (Ac)', state.Ac.toFixed(2) + ' mm²') +
         resultRow('Window Area (Aw)', state.Aw.toFixed(2) + ' mm²') +
         '<hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">' +
@@ -873,6 +893,7 @@ function restartDesign() {
     document.getElementById('Bm').value = '0.15';
     document.getElementById('J').value = '5';
     document.getElementById('kw').value = '0.25';
+    document.getElementById('multiplier').value = '1';
     document.getElementById('swg-select').value = '';
     document.getElementById('sel-display').textContent = 'No wire selected';
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -881,4 +902,3 @@ function restartDesign() {
 
 </body>
 </html>
-
